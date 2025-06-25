@@ -16,7 +16,7 @@ def send_packet(packet):
     if packet.sniffed_on == FROM_IFACE:
         if IP in packet and (TCP in packet or UDP in packet):
             packet[IP].src = TO_IFACE_IP
-            if not (pack.sport in port_table and port_table[packet.sport] == packet[IP].src):
+            if not (packet.sport in port_table and port_table[packet.sport] == packet[IP].src):
                 while packet.sport in port_table:
                     packet.sport = random.randint(1024, 65535)
                 port_table[packet.sport] = packet[IP].src
