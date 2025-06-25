@@ -14,7 +14,7 @@ TO_IFACE_IP = get_if_addr(TO_IFACE)
 port_table: Dict[int, str] = {}
 
 # list of firewall rules in the format (protocol, port, allow)
-inbound_firewall_rules: List[Tuple[str, int, bool]] = [("UDP", 12345, False)]
+inbound_firewall_rules: List[Tuple[str, int, bool]] = []
 
 
 def send_packet(packet):
