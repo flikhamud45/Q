@@ -25,7 +25,7 @@ def mac_bytes_to_str(mac: bytes):
     return s[:-1]
 
 def mac_str_to_bytes(mac: str) -> bytes:
-    return b"".join(int.to_bytes(int(b), 1, "big") in mac.lower().split(":"))
+    return b"".join(int.to_bytes(int(b), 1, "big") for b in mac.lower().split(":"))
 
 
 def recv_ether(sock):
@@ -33,9 +33,13 @@ def recv_ether(sock):
     opening, data = ether_pack[:ETHER_HEADER.size], ether_pack[ETHER_HEADER.size:]
     src_mac, dst_mac, ether_type = ETHER_HEADER.unpack(opening)
     if mac_bytes_to_str(dst_mac) == MY_MAC:
-        handle_packet(sock, data, ether_type)
+        handle_ether_packet(sock, data, ether_type)
 
-def handle_packet(sock, data: bytes, ether_type: int):
+def send_ether(sock, src_mac: bytes, dst_mac: bytes, ether_type: EtherType, data: bytes):
+    sock.send(ETHER_HEADER.pack(src_mac, dst_mac, ether_type.value) + data)
+
+
+def handle_ether_packet(sock, data: bytes, ether_type: int):
     ether_type = EtherType(ether_type)
     if ether_type in ETHER_PROTO_HANDLES:
         ETHER_PROTO_HANDLES[EtherType(ether_type)](sock, data)
