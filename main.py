@@ -1,6 +1,7 @@
 from scapy.all import *
 from typing import Dict, Tuple
 import random
+from typing import Dict
 
 FROM_IFACE = "enp0s8"
 TO_IFACE = "enp0s9"
@@ -11,8 +12,13 @@ TO_IFACE_MAC = get_if_hwaddr(TO_IFACE)
 FROM_IFACE_IP = get_if_addr(FROM_IFACE)
 TO_IFACE_IP = get_if_addr(TO_IFACE)
 
+
 port_table: Dict[Tuple[str, int], int] = {}
 port_table_inv: Dict[int, Tuple[str, int]] = {}
+
+# list of firewall rules in the format (protocol, port, allow)
+inbound_firewall_rules: List[Tuple[str, int, bool]] = []
+
 
 def send_packet(packet):
     if packet.sniffed_on == FROM_IFACE:
@@ -29,7 +35,14 @@ def send_packet(packet):
             packet.sport = port_table[(packet[IP].src, packet.sport)]
             send(packet, iface=TO_IFACE, verbose=True)
     else:
-
+        for protocol, port, allow in inbound_firewall_rules:
+            # the first matching rule will be applied
+            if (protocol == 'TCP' and TCP in packet or protocol == 'UDP' and UDP in packet) and packet.dport == port:
+                if not allow:
+                    return
+                if allow:
+                    break
+            
         if IP in packet and (TCP in packet or UDP in packet) and packet.dport in port_table.values():
             packet[Ether].src = FROM_IFACE_MAC
             packet[IP].src = FROM_IFACE_IP
