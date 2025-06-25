@@ -6,19 +6,17 @@ iface = "wlan0"
 MY_MAC = get_if_hwaddr(iface).lower()
 MY_IP = get_if_addr(iface)
 
-ETHER_START_PREAMBLE = b'\xaa'
-ETHER_END_PREAMBLE = b'\xaa'
-ETHER_START_PREAMBLE_LEN = 7
-ETHER_PREAMBLE = ETHER_START_PREAMBLE * ETHER_START_PREAMBLE + ETHER_END_PREAMBLE
+MAC_BROADCAST = "FF:FF:FF:FF:FF:FF"
 
 ETHER_HEADER = struct.Struct("6s6sh")
 
 
 ARP_STRUCT = struct.Struct("hhBBh")
-MAC_IPv4_ARP_STRUCT = struct.Struct("6s4s6s4s")
 
 MAC_HW_TYPE = 1
 IPv4_IP_TYPE = 2048
+MAC_HW_SIZE = 6
+IPv4_IP_SIZE = 4
 
 class EtherType(Enum):
     ip = 0x0800
@@ -37,11 +35,11 @@ def mac_bytes_to_str(mac: bytes):
     return s[:-1]
 
 def mac_str_to_bytes(mac: str) -> bytes:
-    return b"".join(int.to_bytes(int(b), 1, "big") for b in mac.lower().split(":"))
+    return b"".join(int.to_bytes(int(b, 16), 1, "big") for b in mac.lower().split(":"))
 
 
 def ip_str_to_bytes(ip: str) -> bytes:
-    return b"".join(int.to_bytes(int(b), 1, "big") in ip.split("."))
+    return b"".join(int.to_bytes(int(b), 1, "big") for b in ip.split("."))
 
 
 
@@ -79,12 +77,16 @@ def handle_arp(sock, data: bytes):
 ETHER_PROTO_HANDLES = {EtherType.ip: handle_ip, EtherType.arp: handle_arp}
 
 
+def send_arp(sock, opcode: ArpOpcode, hw_src: bytes, ip_src: bytes, hw_dst: bytes, ip_dst: bytes, hw_type: int = MAC_HW_TYPE, ip_type: int = IPv4_IP_TYPE, hw_size: int = MAC_HW_SIZE, ip_size: int = IPv4_IP_SIZE):
+    arp_header = ARP_STRUCT.pack(hw_type, ip_type, hw_size, ip_size, opcode.value)
+    arp_data = struct.pack(f"{hw_size}s{ip_size}s{hw_size}s{ip_size}s", hw_src, ip_src, hw_dst, ip_dst)
+    send_ether(sock, hw_src, hw_dst, EtherType.arp, arp_header+arp_data)
 
-def send_arp_request(sock):
-    pass
+def send_arp_request(sock, ip: str):
+    send_arp(sock, ArpOpcode.arp_request, mac_str_to_bytes(MY_MAC), ip_str_to_bytes(MY_IP), mac_str_to_bytes(MAC_BROADCAST), ip_str_to_bytes(ip))
 
 def send_arp_answer(sock, hw_dst: bytes, ip_dst: bytes):
-    pass
+    send_arp(sock, ArpOpcode.arp_answer, mac_str_to_bytes(MY_MAC), ip_str_to_bytes(MY_IP), hw_dst, ip_dst)
 
 def main():
     sock = conf.L2socket(promisc=True)
