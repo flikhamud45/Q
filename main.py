@@ -14,7 +14,7 @@ def send_packet(packet):
     else:
         if Ether in packet:
             packet[Ether].src = FROM_IFACE_MAC
-        sendp(packet, iface=FROM_IFACE, verbose=False)
+        send(packet, iface=FROM_IFACE, verbose=False)
 
 def main():
     sniff(iface=[FROM_IFACE, TO_IFACE], prn=send_packet)
