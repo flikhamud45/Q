@@ -18,7 +18,7 @@ port_table: Dict[Tuple[str, int], int] = {}
 port_table_inv: Dict[int, Tuple[str, int]] = {}
 
 # list of firewall rules in the format (protocol, port, allow)
-inbound_firewall_rules: List[Tuple[str, int, bool]] = []
+inbound_firewall_rules: List[Tuple[str, int, bool]] = [("UDP", 12345, False)]
 
 def send_packet(packet):
     if packet.sniffed_on == FROM_IFACE:
