@@ -36,6 +36,7 @@ def send_packet(packet):
             packet.sport = port_table[(packet[IP].src, packet.sport)]
             packet[Ether].src = TO_IFACE_MAC
             packet[IP].src = TO_IFACE_IP
+            port_table_times[datetime.now()] = packet.sport
             send(packet, iface=TO_IFACE, verbose=True)
     else:
         
@@ -45,6 +46,7 @@ def send_packet(packet):
                 protocol = inbound_firewall_rules[packet.dport]
                 if (protocol == "TCP" and TCP in packet) or (protocol == "UDP" and UDP in packet):
                     return
+            port_table_times[datetime.now()] = packet.dport
             packet[Ether].src = FROM_IFACE_MAC
             packet[IP].src = FROM_IFACE_IP
             packet.dport, packet[IP].dst = port_table_inv[packet.dport]
