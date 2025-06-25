@@ -25,7 +25,7 @@ def mac_bytes_to_str(mac: bytes):
     return s[:-1]
 
 def mac_str_to_bytes(mac: str) -> bytes:
-    return b"".join(int.to_bytes(int(b), 1, "big") for b in mac.lower().split(":"))
+    return b"".join(int.to_bytes(int(b, 16), 1, "big") for b in mac.lower().split(":"))
 
 
 def recv_ether(sock):
