@@ -4,10 +4,13 @@ FROM_IFACE = "enp0s8"
 TO_IFACE = "enp0s9"
 
 def send_packet(packet):
-    sendp(packet, iface=TO_IFACE, verbose=False)
+    if packet.sniffed_on == FROM_IFACE:
+        sendp(packet, iface=TO_IFACE, verbose=False)
+    else:
+        sendp(packet, iface=FROM_IFACE, verbose=False)
 
 def main():
-    sniff(iface=FROM_IFACE, prn=send_packet)
+    sniff(iface=[FROM_IFACE, TO_IFACE], prn=send_packet)
 
 
 if __name__ == "__main__":
