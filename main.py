@@ -12,6 +12,8 @@ ETHER_PREAMBLE = ETHER_START_PREAMBLE * ETHER_START_PREAMBLE + ETHER_END_PREAMBL
 
 ETHER_HEADER = struct.Struct("6s6sh")
 
+ARP_STRUCT = struct.Struct("hhBBh6s")
+
 class EtherType(Enum):
     ip = 0x0800
     arp = 0x0806
@@ -53,6 +55,9 @@ def handle_arp(sock, data: bytes):
 ETHER_PROTO_HANDLES = {EtherType.ip: handle_ip, EtherType.arp: handle_arp}
 
 
+
+def send_arp_request(sock):
+    pass
 
 def main():
     sock = conf.L2socket(promisc=True)
