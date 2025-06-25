@@ -18,9 +18,7 @@ def send_packet(packet):
     if packet.sniffed_on == FROM_IFACE:
         if Ether in packet and IP in packet and (TCP in packet or UDP in packet):
             if (packet[IP].src, packet[IP].sport) not in port_table:
-                new_sport = random.randint(1024, 65535)
-                while (packet[IP].src, new_sport) in port_table:
-                    new_sport = random.randint(1024, 65535)
+                new_sport = random.choice(set(range(1024, 65536)) - set(port_table.values()))
                 port_table[(packet[IP].src, packet.sport)] = new_sport
                 port_table_inv[new_sport] = (packet[IP].src, packet.sport)
 
