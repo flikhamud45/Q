@@ -18,7 +18,7 @@ port_table_inv: Dict[int, Tuple[str, int]] = {}
 
 
 # list of firewall rules in the format (protocol, port, allow)
-inbound_firewall_rules: List[Tuple[str, int, bool]] = [("UDP", 12345, False)]
+inbound_firewall_rules: Dict[int, Tuple[str, bool]] = {12345: ("UDP", False)}
 
 
 def send_packet(packet):
@@ -34,15 +34,14 @@ def send_packet(packet):
             packet[IP].src = TO_IFACE_IP
             send(packet, iface=TO_IFACE, verbose=True)
     else:
-        for protocol, port, allow in inbound_firewall_rules:
-            # the first matching rule will be applied
-            if (protocol == 'TCP' and TCP in packet or protocol == 'UDP' and UDP in packet) and packet.dport == port:
-                if not allow:
-                    return
-                if allow:
-                    break
+        
             
         if IP in packet and (TCP in packet or UDP in packet) and packet.dport in port_table_inv:
+            if packet.dport in inbound_firewall_rules:
+                protocol, allow = inbound_firewall_rules[packet.dport]
+                if (protocol == "TCP" and TCP in packet) or (protocol == "UDP" and UDP in packet):
+                    if not allow:
+                        return
             packet[Ether].src = FROM_IFACE_MAC
             packet[IP].src = FROM_IFACE_IP
             packet.dport, packet[IP].dst = port_table_inv[packet.dport]
