@@ -15,6 +15,7 @@ TO_IFACE_IP = get_if_addr(TO_IFACE)
 
 port_table: Dict[Tuple[str, int], int] = {}
 port_table_inv: Dict[int, Tuple[str, int]] = {}
+port_table_times: Dict[datetime, int] = {}
 
 
 # firewall rules in format: (protocol, field): {blacklist of values}
@@ -29,7 +30,11 @@ def send_packet(packet):
     if packet.sniffed_on == FROM_IFACE:
         if Ether in packet and IP in packet and (TCP in packet or UDP in packet):
             if (packet[IP].src, packet[IP].sport) not in port_table:
-                new_sport = random.choice(list(set(range(1024, 65536)) - set(port_table.values())))
+                avialable_ports = list(set(range(1024, 65536)) - set(port_table.values()))
+                if len(avialable_ports) == 0:
+                    new_sport = port_table_times[min(port_table_times.keys())]
+                else:
+                    new_sport = random.choice(avialable_ports)
                 port_table[(packet[IP].src, packet.sport)] = new_sport
                 port_table_inv[new_sport] = (packet[IP].src, packet.sport)
 
@@ -46,7 +51,7 @@ def send_packet(packet):
                 if field_value in blacklist:
                     return
 
-        if IP in packet and (TCP in packet or UDP in packet) and packet.dport in port_table_inv:
+        if Ether in packet and IP in packet and (TCP in packet or UDP in packet) and packet.dport in port_table_inv:
             packet[Ether].src = FROM_IFACE_MAC
             packet[IP].src = FROM_IFACE_IP
             packet.dport, packet[IP].dst = port_table_inv[packet.dport]
