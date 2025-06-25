@@ -8,7 +8,7 @@ ETHER_END_PREAMBLE = b'\xaa'
 ETHER_START_PREAMBLE_LEN = 7
 ETHER_PREAMBLE = ETHER_START_PREAMBLE * ETHER_START_PREAMBLE + ETHER_END_PREAMBLE
 
-ETHER_HEADER = struct.Struct("6b6bh")
+ETHER_HEADER = struct.Struct("6s6sh")
 MY_MAC = get_if_hwaddr(iface).lower()
 
 class EtherType(Enum):
