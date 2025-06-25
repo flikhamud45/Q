@@ -11,8 +11,6 @@ TO_IFACE_MAC = get_if_hwaddr(TO_IFACE)
 FROM_IFACE_IP = get_if_addr(FROM_IFACE)
 TO_IFACE_IP = get_if_addr(TO_IFACE)
 
-
-
 port_table: Dict[Tuple[str, int], int] = {}
 port_table_inv: Dict[int, Tuple[str, int]] = {}
 
@@ -20,15 +18,13 @@ def send_packet(packet):
     if packet.sniffed_on == FROM_IFACE:
         if Ether in packet and IP in packet and (TCP in packet or UDP in packet):
             if (packet[IP].src, packet[IP].sport) not in port_table:
-                new_sport = random.randint(1024, 65535)
-                while (packet[IP].src, new_sport) in port_table:
-                    new_sport = random.randint(1024, 65535)
+                new_sport = random.choice(list(set(range(1024, 65536)) - set(port_table.values())))
                 port_table[(packet[IP].src, packet.sport)] = new_sport
                 port_table_inv[new_sport] = (packet[IP].src, packet.sport)
-            packet[Ether].src = TO_IFACE_MAC
 
-            packet[IP].src = TO_IFACE_IP
             packet.sport = port_table[(packet[IP].src, packet.sport)]
+            packet[Ether].src = TO_IFACE_MAC
+            packet[IP].src = TO_IFACE_IP
             send(packet, iface=TO_IFACE, verbose=True)
     else:
         if IP in packet and (TCP in packet or UDP in packet) and packet.dport in port_table_inv:
