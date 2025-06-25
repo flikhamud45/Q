@@ -12,9 +12,13 @@ TO_IFACE_MAC = get_if_hwaddr(TO_IFACE)
 FROM_IFACE_IP = get_if_addr(FROM_IFACE)
 TO_IFACE_IP = get_if_addr(TO_IFACE)
 
+<<<<<<< HEAD
 
 port_table: Dict[Tuple[str, int], int] = {}
 port_table_inv: Dict[int, Tuple[str, int]] = {}
+=======
+port_table: Dict[int, str] = {}
+>>>>>>> aa7862e (solve)
 
 # list of firewall rules in the format (protocol, port, allow)
 inbound_firewall_rules: List[Tuple[str, int, bool]] = [("UDP", 12345, False)]
