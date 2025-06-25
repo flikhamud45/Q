@@ -4,6 +4,10 @@ import struct
 
 iface = "wlan0"
 MY_MAC = get_if_hwaddr(iface).lower()
+<<<<<<< HEAD
+=======
+MY_IP = get_if_addr(iface)
+>>>>>>> 7e6df63 (temp)
 
 ETHER_START_PREAMBLE = b'\xaa'
 ETHER_END_PREAMBLE = b'\xaa'
@@ -12,11 +16,17 @@ ETHER_PREAMBLE = ETHER_START_PREAMBLE * ETHER_START_PREAMBLE + ETHER_END_PREAMBL
 
 ETHER_HEADER = struct.Struct("6s6sh")
 
-ARP_STRUCT = struct.Struct("hhBBh6s")
+
+ARP_STRUCT = struct.Struct("hhBBh")
+MAC_IPv4_ARP_STRUCT = struct.Struct("6s4s6s4s")
 
 class EtherType(Enum):
     ip = 0x0800
     arp = 0x0806
+
+class ArpOpcode(Enum):
+    arp_request = 1
+    arp_answer = 2
 
 
 
@@ -28,6 +38,11 @@ def mac_bytes_to_str(mac: bytes):
 
 def mac_str_to_bytes(mac: str) -> bytes:
     return b"".join(int.to_bytes(int(b), 1, "big") for b in mac.lower().split(":"))
+
+
+def ip_str_to_bytes(ip: str) -> bytes:
+    return b"".join(int.to_bytes(int(b), 1, "big") in ip.split("."))
+
 
 
 def recv_ether(sock):
@@ -50,7 +65,13 @@ def handle_ip(sock, data: bytes):
     pass
 
 def handle_arp(sock, data: bytes):
-    pass
+    arp_header, arp_data = data[:ARP_STRUCT.size], data[ARP_STRUCT.size:]
+    hw_type, ip_type, hw_size, ip_size, opcode = ARP_STRUCT.unpack(arp_header)
+    hw_src, ip_src, hw_dst, ip_dst = struct.unpack(f"{hw_size}s{ip_size}s{hw_size}s{ip_size}s", arp_data)
+    if opcode == ArpOpcode.arp_request:
+        if hw_dst == mac_str_to_bytes(MY_MAC):
+            send_arp_answer()
+
 
 ETHER_PROTO_HANDLES = {EtherType.ip: handle_ip, EtherType.arp: handle_arp}
 
