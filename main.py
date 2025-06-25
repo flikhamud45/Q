@@ -13,7 +13,7 @@ TO_IFACE_IP = get_if_addr(TO_IFACE)
 
 port_table: Dict[Tuple[str, int], int] = {}
 port_table_inv: Dict[int, Tuple[str, int]] = {}
-port_table_time: Dict[datetime, int] = {}
+port_table_times: Dict[datetime, int] = {}
 
 def send_packet(packet):
     if packet.sniffed_on == FROM_IFACE:
