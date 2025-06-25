@@ -31,7 +31,7 @@ def send_packet(packet):
             packet.sport = port_table[(packet[IP].src, packet.sport)]
             send(packet, iface=TO_IFACE, verbose=True)
     else:
-        if IP in packet and (TCP in packet or UDP in packet) and packet.dport in port_table.values():
+        if IP in packet and (TCP in packet or UDP in packet) and packet.dport in port_table_inv:
             packet[Ether].src = FROM_IFACE_MAC
             packet[IP].src = FROM_IFACE_IP
             packet.dport, packet[IP].dst = port_table_inv[packet.dport]
