@@ -1,7 +1,6 @@
 from scapy.all import *
 from typing import Dict, Tuple
 import random
-from typing import Dict
 
 FROM_IFACE = "enp0s8"
 TO_IFACE = "enp0s9"
