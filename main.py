@@ -14,7 +14,8 @@ port_table = {}
 
 def send_packet(packet):
     if packet.sniffed_on == FROM_IFACE:
-        if IP in packet and (TCP in packet or UDP in packet):
+        if Ether in packet and IP in packet and (TCP in packet or UDP in packet):
+            packet[Ether].src = TO_FACE_MAC
             packet[IP].src = TO_IFACE_IP
             if not (pack.sport in port_table and port_table[packet.sport] == packet[IP].src):
                 while packet.sport in port_table:
@@ -23,6 +24,7 @@ def send_packet(packet):
         sendp(packet, iface=TO_IFACE, verbose=False)
     else:
         if IP in packet and (TCP in packet or UDP in packet) and packet.dport in port_table:
+            packet[Ether].src = FROM_IFACE_MAC
             packet[IP].dst = port_table[packet.dport]
         sendp(packet, iface=FROM_IFACE, verbose=False)
 
