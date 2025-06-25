@@ -22,9 +22,9 @@ def send_packet(packet):
                 port_table[(packet[IP].src, packet.sport)] = new_sport
                 port_table_inv[new_sport] = (packet[IP].src, packet.sport)
 
+            packet.sport = port_table[(packet[IP].src, packet.sport)]
             packet[Ether].src = TO_IFACE_MAC
             packet[IP].src = TO_IFACE_IP
-            packet.sport = port_table[(packet[IP].src, packet.sport)]
             send(packet, iface=TO_IFACE, verbose=True)
     else:
         if IP in packet and (TCP in packet or UDP in packet) and packet.dport in port_table_inv:
