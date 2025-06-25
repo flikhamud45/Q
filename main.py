@@ -17,8 +17,8 @@ port_table: Dict[Tuple[str, int], int] = {}
 port_table_inv: Dict[int, Tuple[str, int]] = {}
 port_table_times: Dict[datetime, int] = {}
 
-# list of firewall rules in the format (protocol, port, allow)
-inbound_firewall_rules: Dict[int, Tuple[str, bool]] = {12345: ("UDP", False)}
+# list of firewall rules in the format (protocol, port)
+inbound_firewall_rules: Dict[int, Tuple[str, bool]] = {12345: "UDP"}
 
 
 def send_packet(packet):
@@ -42,10 +42,9 @@ def send_packet(packet):
             
         if Ether in packet and IP in packet and (TCP in packet or UDP in packet) and packet.dport in port_table_inv:
             if packet.dport in inbound_firewall_rules:
-                protocol, allow = inbound_firewall_rules[packet.dport]
+                protocol = inbound_firewall_rules[packet.dport]
                 if (protocol == "TCP" and TCP in packet) or (protocol == "UDP" and UDP in packet):
-                    if not allow:
-                        return
+                    return
             packet[Ether].src = FROM_IFACE_MAC
             packet[IP].src = FROM_IFACE_IP
             packet.dport, packet[IP].dst = port_table_inv[packet.dport]
